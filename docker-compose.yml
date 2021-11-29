@@ -1,0 +1,51 @@
+#docker-compose -p tlc up -d
+version: "3.8"
+services:
+  backend:
+    image: backend-tlc
+    depends_on:
+      - db
+    ports: 
+      - "8080:8080"
+    build:
+      context: .
+      dockerfile: api/src/main/docker/Dockerfile.jvm
+      
+  frontend:
+    image: nginx-tlc
+    ports:
+      - "80:80"
+    build:
+      context: .
+      dockerfile: deploy/front-dockerfile
+    environment:
+      - AUTO_LETS_ENCRYPT=no
+      - USE_REVERSE_PROXY=no
+      - DISABLE_DEFAULT_SERVER=no
+      - SERVER_NAME=doodle.diverse-team.fr phpmyadmin.diverse-team.fr pad.diverse-team.fr
+      - USE_CLIENT_CACHE=yes
+      - USE_GZIP=yes
+#      - REVERSE_PROXY_URL=http://localhost/
+      
+  db:
+    image: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=tlc
+      - MYSQL_USER=tlc
+      - MYSQL_PASSWORD=tlc
+      
+  etherpad:
+    image: etherpad/etherpad:stable
+    ports:
+      - "9001:9001"
+    volumes:
+      - ./api/APIKEY.txt:/opt/etherpad-lite/APIKEY.txt
+      
+  mail:
+    image: bytemark/smtp
+    restart: always
+    ports:
+      - "2525:25"
