@@ -10,6 +10,7 @@ services:
     build:
       context: .
       dockerfile: api/src/main/docker/Dockerfile.jvm
+    restart: always
       
   frontend:
     image: nginx-tlc
@@ -17,7 +18,7 @@ services:
       - "80:80"
     build:
       context: .
-      dockerfile: deploy/front-dockerfile
+      dockerfile: deploy/front-dockerfile2
     environment:
       - AUTO_LETS_ENCRYPT=no
       - USE_REVERSE_PROXY=no
@@ -25,6 +26,7 @@ services:
       - SERVER_NAME=doodle.diverse-team.fr phpmyadmin.diverse-team.fr pad.diverse-team.fr
       - USE_CLIENT_CACHE=yes
       - USE_GZIP=yes
+      - USE_REMOTE_API=false
 #      - REVERSE_PROXY_URL=http://localhost/
       
   db:
@@ -38,7 +40,7 @@ services:
       - MYSQL_PASSWORD=tlc
       
   etherpad:
-    image: etherpad/etherpad:stable
+    image: etherpad/etherpad:latest
     ports:
       - "9001:9001"
     volumes:
