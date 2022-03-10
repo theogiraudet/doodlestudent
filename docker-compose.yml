@@ -1,36 +1,47 @@
 #docker-compose -p tlc up -d
-version: "3.8"
+version: "3.7"
 services:
   backend:
     image: backend-tlc
+    container_name: backend
+    hostname: backend
     depends_on:
       - db
-    ports: 
-      - "8080:8080"
     build:
       context: .
       dockerfile: api/src/main/docker/Dockerfile.jvm
     restart: always
+    environment:
+      - doodle.internalPadUrl=http://etherpad:9001/
+      - doodle.externalPadUrl=http://pelle.pad.diverse-team.fr/
+      - quarkus.datasource.jdbc.url=jdbc:mysql://db:3306/tlc?useUnicode=true&serverTimezone=Europe/Paris
       
   frontend:
     image: nginx-tlc
+    container_name: frontend
+    hostname: frontend
     ports:
-      - "80:80"
+      - "80:8080"
+      - "443:8443"
     build:
       context: .
       dockerfile: deploy/front-dockerfile2
     environment:
-      - AUTO_LETS_ENCRYPT=no
-      - USE_REVERSE_PROXY=no
+      - AUTO_LETS_ENCRYPT=yes
+      - USE_REVERSE_PROXY=yes
       - DISABLE_DEFAULT_SERVER=no
-      - SERVER_NAME=doodle.diverse-team.fr phpmyadmin.diverse-team.fr pad.diverse-team.fr
+      - SERVER_NAME=pelle.diverse-team.fr pelle.myadmin.diverse-team.fr pelle.pad.diverse-team.fr
       - USE_CLIENT_CACHE=yes
       - USE_GZIP=yes
-      - USE_REMOTE_API=false
-#      - REVERSE_PROXY_URL=http://localhost/
-      
+      - REVERSE_PROXY_URL=http://localhost/
+    volumes:
+      - ./deploy/nginx2.conf:/server-confs/api.conf
+      - ./deploy/certificates:/etc/letsencrypt
+
   db:
     image: mysql
+    container_name: db
+    hostname: db
     ports:
       - "3306:3306"
     environment:
@@ -41,13 +52,19 @@ services:
       
   etherpad:
     image: etherpad/etherpad:latest
+    container_name: etherpad
+    hostname: etherpad
     ports:
       - "9001:9001"
     volumes:
       - ./api/APIKEY.txt:/opt/etherpad-lite/APIKEY.txt
+
       
   mail:
     image: bytemark/smtp
     restart: always
+    container_name: mail
+    hostname: mail
     ports:
       - "2525:25"
+

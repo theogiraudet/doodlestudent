@@ -5,8 +5,8 @@ RUN npm install
 RUN npm i -g @angular/cli
 RUN npm run build
 
-FROM bunkerity/bunkerized-nginx
+FROM nginx
 WORKDIR /
 COPY --from=builder /usr/src/app/dist/* /www/
-ADD deploy/nginx2.conf /server-confs/api.conf
-EXPOSE 8080
+ADD deploy/nginx.conf /http-confs/api.conf
+EXPOSE 80

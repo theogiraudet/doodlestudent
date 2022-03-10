@@ -9,4 +9,7 @@ FROM nginx
 WORKDIR /
 COPY --from=builder /usr/src/app/dist/* /www/
 ADD deploy/nginx.conf /http-confs/api.conf
+RUN mkdir /etc/letsencrypt
+RUN chown root:101 /etc/letsencrypt
+RUN chmod 770 /etc/letsencrypt
 EXPOSE 80
